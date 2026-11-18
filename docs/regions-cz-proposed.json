@@ -5,7 +5,7 @@
   "codes": {
     "proposal": "Current ISO 3166-2:CZ codes: CZ-10 (Prague), CZ-20, CZ-31, CZ-32, CZ-41, CZ-42, CZ-51, CZ-52, CZ-53, CZ-63, CZ-64, CZ-71, CZ-72, CZ-80.",
     "why": "These are the codes ISO 3166-2:CZ defines today (two digits per region). The letter codes CZ-PR, CZ-JC, CZ-JM, CZ-KA, CZ-KR, CZ-LI, CZ-OL, CZ-PA, CZ-PL, CZ-ST, CZ-US, CZ-VY, CZ-ZL and CZ-MO were replaced by the numeric ones in November 2016 and are no longer ISO codes. A bare CZ is not in STATE_CODES (engine/address_search.py); PR, MO and PA are (Puerto Rico, Missouri, Pennsylvania), and US is the ISO 3166-1 code of the United States.",
-    "verified": "Read from Wikipedia's copy of ISO 3166-2:CZ on 2026-11-18, including its change log for 2016-11-15. Not checked against the ISO Online Browsing Platform.",
+    "verified": "opened 2026-11-18: OMG's ISO 3166-2 ontology for Czechia, which reproduces the ISO list and defines exactly these 14 units with no letter code. The 2016-11-15 date of the replacement is unverified: the ISO Online Browsing Platform answers HTTP 403, so the change log could only be read in Wikipedia's copy of it. Not checked against the ISO site.",
     "open_question": "The numeric code part fails the [A-Z]{2} rule for address indexes (engine/setup/manifest.py line 72, engine/setup/install.py line 267) and the [A-Z]{2} dispatch in packaging/build_packs.py build_map()."
   },
   "layer_keys": {
@@ -22,18 +22,18 @@
     "CC-BY-4.0": {
       "name": "Creative Commons Attribution 4.0 International",
       "url": "https://creativecommons.org/licenses/by/4.0/",
-      "attribution": "ČÚZK asks for the source in the form \"ČÚZK, [rok]\" (year of the data used), the metadata passed on, the licence linked, and a description of any change to a modified work.",
-      "attribution_sentence": null,
-      "attribution_sentence_note": "Missing: ČÚZK publishes the format \"ČÚZK, [rok]\" but no worked example and no English sentence, so there is nothing to quote verbatim. Not checked on the CC site either.",
+      "attribution": "ČÚZK asks for the source in the form \"ČÚZK, [rok]\" (year of the data used) in printed outputs from the data and in viewing services over them; the metadata passed on and a description of any change to a modified work are duties tied to dissemination (\"šířit\"). A private copy triggers none of them.",
+      "attribution_sentence": "data printouts and viewing services including these data must contain the source in the form „ČÚZK “ where time information is related to the updatedness of the particular dataset.",
+      "attribution_sentence_note": "Opened 2026-11-18 on the English version of ČÚZK's terms page, \"Version 1.0 - dated April 4, 2016\". That page is stale: it names no CC BY 4.0, lists no ZABAGED and drops the [rok] placeholder, so the Czech page is the one to quote. No worked example on either page; not checked on the CC site.",
       "share_alike": false,
-      "verified": "opened 2026-11-18: ČÚZK terms page and open-data page; the CC BY 4.0 text itself was not reopened"
+      "verified": "opened 2026-11-18: ČÚZK terms page, its open-data page and the English version dated 2016-04-04; the CC BY 4.0 text itself was not reopened"
     },
     "CC-BY-SA-4.0": {
       "name": "Creative Commons Attribution-ShareAlike 4.0 International",
       "url": "https://creativecommons.org/licenses/by-sa/4.0/",
       "attribution": "Credit, link the licence, note changes, and share adaptations under the same licence.",
       "share_alike": true,
-      "verified": "EuroCrops repository opened 2026-11-18; licence text not reopened"
+      "verified": "opened 2026-11-18: EuroCrops repository page; licence text not reopened"
     },
     "ODbL-1.0": {
       "name": "Open Database License 1.0",
@@ -47,21 +47,14 @@
       "url": "https://cdla.dev/permissive-2-0/",
       "attribution": "none required",
       "share_alike": false,
-      "verified": "named in Microsoft's repository README, opened 2026-11-18; licence text not reopened"
+      "verified": "opened 2026-11-18: Microsoft's repository README and dataset-links.csv, and Overture's attribution page, which says the same footprints are \"Licensed by Microsoft under the Open Database License\"; licence text not reopened"
     },
     "Copernicus-WorldDEM-30": {
       "name": "Copernicus WorldDEM-30 licence",
       "url": "see docs/regions-proposed.json",
-      "attribution": "see docs/regions-proposed.json",
+      "attribution": "\"© DLR e.V. 2010-2014 and © Airbus Defence and Space GmbH 2014-2018 provided under COPERNICUS by the European Union and ESA; all rights reserved\"; for modified data, \"produced using Copernicus WorldDEM-30 © DLR e.V. 2010-2014 … all rights reserved\". Due only when communicating to the general public or distributing.",
       "share_alike": false,
-      "verified": "AWS registry page opened 2026-11-18, which links the licence on dataspace.copernicus.eu; licence text not read"
-    },
-    "LPIS-not-copyrighted": {
-      "name": "No rights claimed (data.gov.cz record: work, database and sui generis rights all \"Not copyrighted\" / \"Not protected\")",
-      "url": "https://data.gov.cz/dataset?iri=https://data.gov.cz/zdroj/datov%C3%A9-sady/00020478/9c2678534cc534ebb99af3b449119244",
-      "attribution": "none stated in the record",
-      "share_alike": false,
-      "verified": "data.gov.cz LPIS record opened 2026-11-18; the Ministry's own terms page was not opened"
+      "verified": "opened 2026-11-18: the collection page on dataspace.copernicus.eu, which carries the source notice verbatim and calls GLO-30 and GLO-90 \"available worldwide with a free license\". Licence text not checked: the ESA User Licence and its mission-specific annex were not opened, and the liability sentence quoted in REGIONS.md is not on that page."
     }
   },
   "country_layers": {
@@ -71,7 +64,7 @@
         "publisher": "ČÚZK / Zeměměřický úřad",
         "url": "https://geoportal.cuzk.cz/Default.aspx?menu=3130&mode=TextMeta&side=vyskopis&metadataID=CZ-CUZK-DMR5G-V",
         "licence": "CC-BY-4.0",
-        "verified": "2026-11-18",
+        "verified": "opened 2026-11-18 (product page)",
         "role": "best detail",
         "notes": "Airborne laser scanning 2009-2013, completed 2016-06-30; mean height error 0.18 m in open terrain, 0.3 m under forest; S-JTSK / Bpv; no fixed update cycle, product last updated 2026-06-01. A point cloud: needs rasterisation before tools/build_terrain.py can read it."
       },
@@ -80,25 +73,25 @@
         "publisher": "ČÚZK / Zeměměřický úřad",
         "url": "https://geoportal.cuzk.cz/Default.aspx?menu=3130&mode=TextMeta&side=vyskopis&metadataID=CZ-CUZK-DMR4G-V",
         "licence": "CC-BY-4.0",
-        "verified": "2026-11-18",
+        "verified": "opened 2026-11-18 (product page and TIFF Atom service)",
         "role": "primary",
         "notes": "Mean height error 0.3 m in open terrain, 1 m under forest; Bpv heights; TIFF Atom service DMR4G-SJTSK-TIFF. 5 m is finer than the US 1 arc-second (~30 m). One file per SM5 sheet; one sheet measured at 768,908 bytes (BENE09)."
       },
       {
-        "dataset": "INSPIRE elevation grid (EL-GRID), TIFF, ETRS89/TM33, one file for the whole state",
+        "dataset": "INSPIRE elevation grid (EL-GRID), TIFF in a ZIP, ETRS89/TM33, one file for the whole state",
         "publisher": "ČÚZK",
         "url": "https://atom.cuzk.gov.cz/EL-GRID/EL-GRID.xml",
         "licence": "CC-BY-4.0",
-        "verified": "2026-11-18 (Atom feed and file length)",
+        "verified": "opened 2026-11-18 (service feed and dataset feed: file name and length)",
         "role": "whole-country alternative",
-        "notes": "Zip is 7,685,616,237 bytes. Grid spacing not stated on the feed; not checked."
+        "notes": "INSPIRE_EL_GRID_3045.zip, 7,685,616,237 bytes: the service feed says the data are TIFF and that the dataset is compressed for download (ZIP), and states no uncompressed size. Grid spacing not stated on the feed; neither was checked."
       },
       {
         "dataset": "Copernicus DEM GLO-30 Public",
         "publisher": "ESA / Airbus, distributed by Sinergise on AWS",
         "url": "https://registry.opendata.aws/copernicus-dem/",
         "licence": "Copernicus-WorldDEM-30",
-        "verified": "2026-11-18 (registry page); licence text not read",
+        "verified": "opened 2026-11-18 (collection page); licence text not checked",
         "role": "fallback",
         "notes": "Surface model: relief follows canopy and roofs. Czechia tile completeness not checked."
       }
@@ -109,7 +102,7 @@
         "publisher": "ČÚZK",
         "url": "https://atom.cuzk.gov.cz/HY-P/HY-P.xml",
         "licence": "CC-BY-4.0",
-        "verified": "2026-11-18 (Atom feed and file length)",
+        "verified": "opened 2026-11-18 (Atom feed and file length)",
         "role": "primary (areas)",
         "notes": "Zip is 454,051,469 bytes. Derived from ZABAGED water features."
       },
@@ -118,7 +111,7 @@
         "publisher": "ČÚZK",
         "url": "https://atom.cuzk.gov.cz/HY-NET/HY-NET.xml",
         "licence": "CC-BY-4.0",
-        "verified": "2026-11-18 (Atom feed and file length)",
+        "verified": "opened 2026-11-18 (Atom feed and file length)",
         "role": "primary (lines)",
         "notes": "Zip is 194,208,037 bytes."
       },
@@ -127,16 +120,16 @@
         "publisher": "VÚV T. G. Masaryka",
         "url": "https://www.dibavod.cz/27/struktura-dibavod.html",
         "licence": null,
-        "verified": "not checked — no licence statement found on the pages opened; the project page asks anyone who wants to use the data to contact VÚV",
+        "verified": "not checked — no licence statement found on the pages opened; with no grant the data are all rights reserved by default, and the project page asks anyone who wants to use them to contact VÚV",
         "role": "not proposed",
-        "notes": "Long-term unmaintained (\"not currently updated\"); only a few datasets are refreshed. Water-course network, reservoirs, basins, flood areas."
+        "notes": "Long-term unmaintained (\"not currently updated\"); only a few datasets are refreshed. Water-course network, reservoirs, basins, flood areas. A private copy is defensible under the private-use exception; anything shared needs VÚV's written permission."
       },
       {
         "dataset": "OSM waterways and water areas (Geofabrik Czechia extract)",
         "publisher": "OpenStreetMap contributors",
         "url": "https://download.geofabrik.de/europe/czech-republic.html",
         "licence": "ODbL-1.0",
-        "verified": "2026-11-18",
+        "verified": "opened 2026-11-18 (Geofabrik Czechia page)",
         "role": "supplement",
         "notes": "czech-republic-latest.osm.pbf, 908 MB, data up to 2026-11-13T21:22:20Z."
       }
@@ -157,17 +150,19 @@
         "dataset": "LPIS public export: farmer blocks (DPB), physical blocks (PB), vineyards (OPV), landscape features (EVP), SHP",
         "publisher": "Ministerstvo zemědělství (Ministry of Agriculture)",
         "url": "https://mze.gov.cz/public/web/mze/farmar/LPIS/uzivatelske-prirucky/prirucky-pro-verejny-lpis/export-dat-lpis.html",
-        "licence": "LPIS-not-copyrighted",
-        "verified": "2026-11-18 (export page and data.gov.cz record)",
+        "licence": null,
+        "verified": "opened 2026-11-18 (export page and data.gov.cz record)",
         "role": "primary",
-        "notes": "Weekly generation, SHP per cadastral territory or per district, plus XML (current and historic). Declared land use, so areas are exact sums, not satellite pixels. Vineyards are a separate entity (OPV)."
+        "notes": "Weekly generation, SHP per cadastral territory or per district, plus XML (current and historic). Declared land use, so areas are exact sums, not satellite pixels. Vineyards are a separate entity (OPV).",
+        "status": "Not copyrighted (work), not copyrighted (database), not protected (sui generis rights) — the data.gov.cz record cited, which is the Prague district dataset, not a national one. MZe's export page states no licence either, only the legal basis, Act 252/1997 Sb. § 3a; the record's DPB/XML distributions are marked \"Contains personal data\".",
+        "status_url": "https://data.gov.cz/dataset?iri=https://data.gov.cz/zdroj/datov%C3%A9-sady/00020478/9c2678534cc534ebb99af3b449119244"
       },
       {
         "dataset": "EuroCrops 2.0 (harmonised LPIS crop parcels with the HCAT taxonomy)",
         "publisher": "EuroCrops project (DLR / BMWK funding)",
         "url": "https://github.com/maja601/EuroCrops",
         "licence": "CC-BY-SA-4.0",
-        "verified": "2026-11-18 (repository page)",
+        "verified": "opened 2026-11-18 (repository page); licence text not reopened",
         "role": "alternative",
         "notes": "Czechia is one of the participating countries. Share-alike: a crop layer built from it inherits CC BY-SA 4.0."
       }
@@ -178,16 +173,16 @@
         "publisher": "ČÚZK / Zeměměřický úřad",
         "url": "https://atom.cuzk.gov.cz/ZABAGED-GPKG/ZABAGED-GPKG.xml",
         "licence": "CC-BY-4.0",
-        "verified": "2026-11-18 (Atom feed and file length)",
+        "verified": "opened 2026-11-18 (Atom feed and file length)",
         "role": "primary",
-        "notes": "Zip: 5,805,826,649 bytes in S-JTSK (EPSG:5514), 6,742,892,709 bytes in ETRS89/TM33 (EPSG:3045), dated 2026-10-04. Building outlines are one of the 142 planimetric feature types; the layer name was not confirmed."
+        "notes": "Zip: 5,805,826,649 bytes in S-JTSK (EPSG:5514), 6,742,892,709 bytes in ETRS89/TM33 (EPSG:3045), dated 2026-10-04. The GeoPackage is one of the selected formats ČÚZK serves through its ATOM service, i.e. open data since 2023-07-01; other formats and media stay in the e-shop. Building outlines are one of the 142 planimetric feature types; the layer name was not confirmed."
       },
       {
         "dataset": "INSPIRE buildings (BU), GML, one file per obec",
         "publisher": "ČÚZK",
         "url": "https://atom.cuzk.gov.cz/BU/BU.xml",
         "licence": "CC-BY-4.0",
-        "verified": "2026-11-18 (Atom feed)",
+        "verified": "opened 2026-11-18 (Atom feed)",
         "role": "alternative",
         "notes": "Built daily where an obec changed. One file per obec, roughly 6,258 of them, so a whole country means a merge step. No heights."
       },
@@ -196,18 +191,18 @@
         "publisher": "Overture Maps Foundation",
         "url": "https://docs.overturemaps.org/attribution",
         "licence": "ODbL-1.0",
-        "verified": "2026-11-18 for the attribution page; the Czech mix of sources is not described there",
+        "verified": "opened 2026-11-18 for the attribution page; the Czech mix of sources is not described there and was not checked",
         "role": "fill",
         "notes": "Which sources make up the Czech buildings theme was not checked."
       },
       {
-        "dataset": "Microsoft Global ML Building Footprints, region CzechRepublic",
+        "dataset": "Microsoft Global ML Building Footprints, regions CzechRepublic and Czechia",
         "publisher": "Microsoft",
         "url": "https://github.com/microsoft/GlobalMLBuildingFootprints",
         "licence": "CDLA-Permissive-2.0",
-        "verified": "2026-11-18 (README and dataset-links.csv)",
+        "verified": "opened 2026-11-18 (README and dataset-links.csv)",
         "role": "fill",
-        "notes": "Czechia is one of the 225 regions in dataset-links.csv (release 2026-07-24); no heights for Czechia were confirmed."
+        "notes": "The 2026-11-12 dataset-links.csv lists 225 regions and files Czechia under two names, CzechRepublic (47 rows) and Czechia (41 rows), over 49 distinct quadkeys; a fill filter has to match both. No heights for Czechia were confirmed."
       }
     ],
     "places": [
@@ -216,7 +211,7 @@
         "publisher": "ČÚZK / Zeměměřický úřad",
         "url": "https://geoportal.cuzk.gov.cz/Default.aspx/Dokumenty/INC/TextMeta/html/getHTML.aspx?mode=TextMeta&side=Geonames&metadataID=CZ-CUZK-GEONAMES-V&head_tab=sekce-02-gp&menu=261",
         "licence": "CC-BY-4.0",
-        "verified": "2026-11-18 (product page and Atom feed; zip 46,625,753 bytes)",
+        "verified": "opened 2026-11-18 (product page and Atom feed; zip 46,625,753 bytes)",
         "role": "primary",
         "notes": "Standardised names for about 165 types of named object, at the detail of the 1:10 000 base map; whole dataset revised on a three-year cycle, published monthly."
       },
@@ -225,7 +220,7 @@
         "publisher": "ČÚZK",
         "url": "https://cuzk.gov.cz/Predpisy/Podminky-poskytovani-prostor-dat-a-sitovych-sluzeb/Podminky-poskytovani-prostorovych-dat-CUZK.aspx",
         "licence": "CC-BY-4.0",
-        "verified": "2026-11-18 (terms page lists the RÚIAN VFR as open data)",
+        "verified": "opened 2026-11-18 (terms page lists the RÚIAN VFR as open data)",
         "role": "primary",
         "notes": "6,258 obec and 77 okres in the AU file that was downloaded; no population figures were collected."
       },
@@ -234,7 +229,7 @@
         "publisher": "OpenStreetMap contributors",
         "url": "https://download.geofabrik.de/europe/czech-republic.html",
         "licence": "ODbL-1.0",
-        "verified": "2026-11-18",
+        "verified": "opened 2026-11-18 (Geofabrik Czechia page)",
         "role": "supplement"
       }
     ],
@@ -244,7 +239,7 @@
         "publisher": "ČÚZK",
         "url": "https://atom.cuzk.gov.cz/RUIAN-CSV-ADR-OB/RUIAN-CSV-ADR-OB.xml",
         "licence": "CC-BY-4.0",
-        "verified": "2026-11-18 (product page opened; says CC BY 4.0)",
+        "verified": "opened 2026-11-18 (product page opened; says CC BY 4.0)",
         "role": "primary",
         "notes": "6,258 files per month, generated on the first day of each month for the last day of the previous month. Also a whole-state variant (menu 3323)."
       },
@@ -253,7 +248,7 @@
         "publisher": "ČÚZK",
         "url": "https://services.cuzk.gov.cz/gml/inspire/ad/epsg-4258/",
         "licence": "CC-BY-4.0",
-        "verified": "2026-11-18 (directory listing opened)",
+        "verified": "opened 2026-11-18 (directory listing opened)",
         "role": "alternative",
         "notes": "One ZIP per obec, a few KB to a few hundred KB each (examples seen: 4.6 KB to 404.7 KB)."
       },
@@ -262,7 +257,7 @@
         "publisher": "Overture Maps Foundation / ČÚZK",
         "url": "https://docs.overturemaps.org/attribution",
         "licence": "CC-BY-4.0",
-        "verified": "2026-11-18 (attribution page: \"Contains data from Český úřad zeměměřický a katastrální (ČÚZK). Available under CC BY 4.0.\")",
+        "verified": "opened 2026-11-18 (attribution page: \"Contains data from Český úřad zeměměřický a katastrální (ČÚZK). Available under CC BY 4.0.\")",
         "role": "the route the current tool already reads",
         "notes": "Row count for Czechia not measured."
       }
@@ -273,7 +268,7 @@
         "publisher": "OpenStreetMap contributors",
         "url": "https://taginfo.geofabrik.de/europe:czech-republic/",
         "licence": "ODbL-1.0",
-        "verified": "2026-11-18 (taginfo API)",
+        "verified": "opened 2026-11-18 (taginfo API)",
         "role": "primary",
         "counts_as_of": "2026-11-17T21:23Z",
         "counts": {
@@ -302,8 +297,8 @@
       }
     ]
   },
-  "not_open_or_not_used": {
-    "dibavod": "No licence statement on the pages opened; the project asks users to contact VÚV. Not proposed until that is settled.",
+  "not_open_nationwide": {
+    "dibavod": "No licence statement on the pages opened, so no grant: all rights reserved by default, permission on request (contact on the project page). Not proposed until that is settled.",
     "cuzk_aerial": "Aerial survey images and archive material are excluded from ČÚZK open data by ČÚZK's own open-data page.",
     "eurocrops": "CC BY-SA 4.0, which would make a crop layer share-alike; proposed only as an alternative."
   },
@@ -356,7 +351,10 @@
         "gpkg_url": "https://download.geofabrik.de/europe/czech-republic/praha-latest-free.gpkg.zip",
         "gpkg_bytes": 54698497,
         "verified": "2026-11-18 (HTTP HEAD)"
-      }
+      },
+      "contains": [],
+      "padded_box_touches": [],
+      "padded_box_touches_note": "tested against the Natural Earth 1:110m outlines shipped in web/world-context.json, not against a border dataset"
     },
     {
       "code": "CZ-20",
@@ -446,8 +444,10 @@
         "gpkg_bytes": 186442923,
         "verified": "2026-11-18 (HTTP HEAD)"
       },
+      "contains": [],
       "padded_box_touches": [
-        "Austria"
+        "Austria",
+        "Germany"
       ],
       "padded_box_touches_note": "tested against the Natural Earth 1:110m outlines shipped in web/world-context.json, not against a border dataset"
     },
@@ -490,10 +490,12 @@
         "gpkg_bytes": 138895592,
         "verified": "2026-11-18 (HTTP HEAD)"
       },
+      "contains": [],
       "padded_box_touches": [
+        "Austria",
         "Germany"
       ],
-      "padded_box_touches_note": "tested against the Natural Earth 1:110m outlines shipped in web/world-context.json, not against a border dataset"
+      "padded_box_touches_note": "tested against the Natural Earth 1:110m outlines shipped in web/world-context.json, not against a border dataset; Austria's outline is drawn about 0.1 deg too far north at the Plzeň border, so that patch is Bavaria in reality"
     },
     {
       "code": "CZ-41",
@@ -534,6 +536,7 @@
         "gpkg_bytes": 58434888,
         "verified": "2026-11-18 (HTTP HEAD)"
       },
+      "contains": [],
       "padded_box_touches": [
         "Germany"
       ],
@@ -578,6 +581,7 @@
         "gpkg_bytes": 193345107,
         "verified": "2026-11-18 (HTTP HEAD)"
       },
+      "contains": [],
       "padded_box_touches": [
         "Germany"
       ],
@@ -622,6 +626,7 @@
         "gpkg_bytes": 82155846,
         "verified": "2026-11-18 (HTTP HEAD)"
       },
+      "contains": [],
       "padded_box_touches": [
         "Germany",
         "Poland"
@@ -667,6 +672,7 @@
         "gpkg_bytes": 108367660,
         "verified": "2026-11-18 (HTTP HEAD)"
       },
+      "contains": [],
       "padded_box_touches": [
         "Poland"
       ],
@@ -710,7 +716,12 @@
         "gpkg_url": "https://download.geofabrik.de/europe/czech-republic/pardubicky-latest-free.gpkg.zip",
         "gpkg_bytes": 99989927,
         "verified": "2026-11-18 (HTTP HEAD)"
-      }
+      },
+      "contains": [],
+      "padded_box_touches": [
+        "Poland"
+      ],
+      "padded_box_touches_note": "tested against the Natural Earth 1:110m outlines shipped in web/world-context.json, not against a border dataset"
     },
     {
       "code": "CZ-63",
@@ -751,6 +762,7 @@
         "gpkg_bytes": 149388827,
         "verified": "2026-11-18 (HTTP HEAD)"
       },
+      "contains": [],
       "padded_box_touches": [
         "Austria"
       ],
@@ -795,6 +807,7 @@
         "gpkg_bytes": 151972650,
         "verified": "2026-11-18 (HTTP HEAD)"
       },
+      "contains": [],
       "padded_box_touches": [
         "Austria",
         "Slovakia"
@@ -840,6 +853,7 @@
         "gpkg_bytes": 104040464,
         "verified": "2026-11-18 (HTTP HEAD)"
       },
+      "contains": [],
       "padded_box_touches": [
         "Poland"
       ],
@@ -884,6 +898,7 @@
         "gpkg_bytes": 99276355,
         "verified": "2026-11-18 (HTTP HEAD)"
       },
+      "contains": [],
       "padded_box_touches": [
         "Slovakia"
       ],
@@ -928,6 +943,7 @@
         "gpkg_bytes": 141385959,
         "verified": "2026-11-18 (HTTP HEAD)"
       },
+      "contains": [],
       "padded_box_touches": [
         "Poland",
         "Slovakia"

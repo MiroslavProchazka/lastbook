@@ -16,7 +16,7 @@ with no US state code in `STATE_CODES` (`engine/address_search.py:26`).
 | Does the map format itself block a Czech map? | **No.** A map set is a folder of SQLite files plus `map-set.json`, with no country, projection, unit or place-name assumptions in the format (§2). |
 | What blocks it? | **The address pipeline**, and only that: parsing (`engine/address_search.py`), the index builder (`tools/build_addresses.py`) and the two-letter index/region naming rule (`engine/setup/manifest.py:72`, `engine/setup/install.py:267`). §3.1–3.5. |
 | Is a single-country `CZ` region cheap? | **Yes.** `CZ` passes every `[A-Z]{2}` gate in the repository unchanged; only the box rule, the place builder and the setup wording need work (§3.3, §3.6, §3.8). |
-| Are the 14 *kraje* cheap? | **No.** Their ISO codes are `CZ-10` … `CZ-80` (digits), which fail `build_packs.build_map` (`packaging/build_packs.py:1471`) and the address-index rule (`engine/setup/manifest.py:72`). That is the same wall France hit ([REGIONS-FR.md:50-66](REGIONS-FR.md)). |
+| Are the 14 *kraje* cheap? | **No.** Their ISO codes are `CZ-10` … `CZ-80` (digits), which fail `build_packs.build_map` (`packaging/build_packs.py:1471`) and the address-index rule (`engine/setup/manifest.py:72`). That is the same wall France hit ([docs/REGIONS-FR.md:50-66](REGIONS-FR.md)). |
 | Does any code already support a non-US region? | **No.** No code reads `regions-proposed.json` or any `regions-*.json`; there is no region concept, no `country` field, no non-US builder. §6. |
 
 ## 2. The map set the app expects
@@ -34,7 +34,7 @@ Written by `packaging/build_packs.py:1476`:
 
 Read by `engine/setup/install.py:301-311` (`map_set`, `map_name`) and enforced by `check_map`
 (`engine/setup/install.py:321-333`): every listed file must exist at exactly that size, and each must match
-`map_member` (`engine/setup/install.py:108-112`), i.e. `derived/geo/<name>.sqlite`, `map-set.json`,
+`map_member` (`engine/setup/install.py:109-114`), i.e. `derived/geo/<name>.sqlite`, `map-set.json`,
 `derived/geo/national-status.json`, `derived/geo/socal-cells.json`, or
 `library-data/geography/resources/atlas.sqlite`. **Nothing in that check is about the United States**: `name` is an
 opaque string, and `map_name` returns it verbatim as `state.current.map` (`engine/setup/api.py:269`).
@@ -43,13 +43,13 @@ opaque string, and `map_name` returns it verbatim as `state.current.map` (`engin
 
 | File | Tables (columns) | Read by | Can CZ fill it without a code change? |
 |---|---|---|---|
-| `derived/geo/national.sqlite` | `feat(id, layer, cls, name, minz, geom)`, `feat_idx` RTREE`(id, minx, maxx, miny, maxy, minz, maxz)`, `poi(id, cls, name, lon, lat)`, `meta(key, value)` — `tools/build_map.py:128-131` | `server.py` tiles and pins (`server.py:703-710`) | **Yes.** `tools/build_map.py` takes its input and output as `argv` (`tools/build_map.py:13`) and reads a Geofabrik GeoPackage. Its docstring says SoCal; the code does not. OSM tags are global, so a Czech `-free.gpkg` works as it stands. |
+| `derived/geo/national.sqlite` | `feat(id, layer, cls, name, minz, geom)`, `feat_idx` RTREE`(id, minx, maxx, miny, maxy, minz, maxz)`, `poi(id, cls, name, lon, lat)`, `meta(key, value)` — `tools/build_map.py:128-131` | `server.py` tiles and pins (`server.py:703-710`) | **Yes.** `tools/build_map.py` takes its input and output as `argv` (`tools/build_map.py:17`) and reads a Geofabrik GeoPackage. Its docstring says SoCal; the code does not. OSM tags are global, so a Czech `-free.gpkg` works as it stands. |
 | `derived/geo/places.sqlite` | `place(id, name, kind, detail, lat, lon, rank, source)`, `place_fts` FTS5`(name, detail)` — `tools/build_places.py:28-29` | `server.py:1395-1450` (`/api/places`, route at `server.py:2093`) | **Not with the shipped tool** (it reads GNIS and Census, `tools/build_places.py:32-48`), but the schema needs nothing new. A ~60-line builder from the same GeoPackage is enough (§4). |
-| `derived/geo/water.sqlite` | `resource(id, source_id, kind, name, lat, lon, detail, source, origin)`, `spatial` RTREE, `feat`, `feat_idx`, `meta`, `water_fts` — `tools/build_water.py:21-29` | `server.py:1064-1080` | Schema yes; the builder reads NID and NHD (US). OSM `waterway`/`natural=water` needs a new reader or a different tool. |
-| `derived/geo/terrain.sqlite` | `tile(z, x, y, png)`, `meta` — `tools/build_terrain.py:150-152` | `server.py:798`, relief/contours/3D | Schema yes; source is USGS 3DEP (`tools/build_terrain.py:5`). Copernicus GLO-30 or ČÚZK DMR needs a new reader. |
-| `derived/geo/buildings.sqlite` | `bldg(x, y, part, n, data)`, `bldg_socal`, `bldg_osm`, `meta` — `tools/build_buildings.py:94-98` | `server.py:934-1013` | Schema yes; the tool reads Microsoft's *US* footprint release (`tools/build_buildings.py:1`). The global release has the same format, so this is a fetch-argument change plus a check. |
+| `derived/geo/water.sqlite` | `resource(id, source_id, kind, name, lat, lon, detail, source, origin)`, `spatial` RTREE, `feat`, `feat_idx`, `meta`, and `water_fts`, which `build_index()` creates separately at `tools/build_water.py:290` — `tools/build_water.py:21-29` | `server.py:1064-1080` | Schema yes; the builder reads NID and NHD (US). OSM `waterway`/`natural=water` needs a new reader or a different tool. |
+| `derived/geo/terrain.sqlite` | `tile(z, x, y, png)`, `meta`, and the `done(x, y, h8)` progress table — `tools/build_terrain.py:150-152` | `server.py:798`, relief/contours/3D | Schema yes; source is USGS 3DEP (`tools/build_terrain.py:5`). Copernicus GLO-30 or ČÚZK DMR needs a new reader. |
+| `derived/geo/buildings.sqlite` | `bldg(x, y, part, n, data)`, `bldg_socal`, `meta`, plus the progress tables `done` and `done_socal` — `tools/build_buildings.py:94-98`; `bldg_osm` is written by `tools/build_osm_heights.py:92` | `server.py:934-1013` | Schema yes; the tool reads Microsoft's *US* footprint release (`tools/build_buildings.py:1`). The global release has the same format, so this is a fetch-argument change plus a check. A builder for Czechia has to know that `done` and `done_socal` exist, because the publish scan rejects a pack that still holds them (`packaging/state_maps.py:117`). |
 | `derived/geo/crops.sqlite` | `resource`, `spatial`, `tile`, `meta` — `tools/build_crops.py:151-155` | `server.py:1065` | Schema yes; USDA CDL is US-only. Empty tables are legal and show nothing. |
-| `library-data/geography/resources/atlas.sqlite` | `resource`, `spatial`, `metadata` | `server.py:1532` | Schema yes, but **no builder exists in this repository** ([MAPS.md:85-88](MAPS.md)). It can ship schema-only, like the California-only layers. |
+| `library-data/geography/resources/atlas.sqlite` | `resource`, `spatial`, `metadata` | `server.py:1532` | Schema yes, but **no builder exists in this repository** ([docs/MAPS.md:85-88](MAPS.md)). It can ship schema-only, like the California-only layers. |
 | `derived/geo/national-status.json` | `{state, stage, features}` — `packaging/state_maps.py:94-96` | `server.py:713-719` | Yes. |
 | `derived/geo/socal-cells.json` | `[]` outside Southern California — `packaging/state_maps.py:96-97` | `server.py:725-742` | Yes, and it must be `[]`: `socal_cells()` writes the file itself when it is missing (`server.py:727-737`). |
 | `derived/geo/addresses/<ID>.sqlite` | `addr(num, street, norm, city, state, zip, lat, lon)`, `meta` — `tools/build_addresses.py:48`, `packaging/address_indexes.py:55` | `engine/address_search.py:88-125` | Schema yes; **builder and parser no** (§3.1–3.3). |
@@ -76,7 +76,7 @@ exactly (`packaging/state_maps.py:43-44`), so a shipped map set must carry crops
 |---|---|---|
 | `engine/address_search.py:41-43` `is_address_query` | a house number, then a space, then a street | Czech order is street, then number: `Vinohradská 12, 120 00 Praha 2` is not recognised as an address at all and goes to the place finder. |
 | `engine/address_search.py:56-66` `_parts` | the postcode is the **last** word and is exactly `\d{5}` | Czech PSČ is 3+2 digits written with a space (`110 00`). `normalize` splits it into `110` and `00`, so no postcode is read; written as `11000` it is read. In a Czech address the PSČ comes **before** the town, not at the end. |
-| `engine/address_search.py:67-76` | the last 1–3 words are a US state name or code | A Czech town is the last word(s) and matches no state, so the state stays empty — harmless. Two-letter Czech town abbreviations could match a US code (e.g. a street ending in `me`/`il`), which is the failure France measured ([REGIONS-FR.md:265-268](REGIONS-FR.md)). |
+| `engine/address_search.py:67-76` | the last 1–3 words are a US state name or code | A Czech town is the last word(s) and matches no state, so the state stays empty — harmless. Two-letter Czech town abbreviations could match a US code (e.g. a street ending in `me`/`il`), which is the failure France measured ([docs/REGIONS-FR.md:265-268](REGIONS-FR.md)). |
 | `engine/address_search.py:10-16`, `tools/build_addresses.py:17-19` | English street-type words (`street`, `avenue`, `boulevard`, `north`…) | No `ulice`, `náměstí`, `třída`, `nábřeží`, or the abbreviations `ul.`, `nám.`, `tř.`. |
 | `engine/address_search.py:37-38`, `tools/build_addresses.py:22-24` | letters outside `a-z0-9` are separators | `Müllerstraße`-style damage: `náměstí` becomes `n m st`, `třída` becomes `t da`. Czech needs folding (`ě→e`, `ř→r`, `č→c`, `š→s`, `ž→z`, `ů→u`) on **both** the build and the query side, or a tokenizer that folds for you. |
 | `engine/address_search.py:46-53` `street_forms` | English ordinals and `n/s/e/w` direction prefixes | Mostly harmless; the ordinal expansion simply never fires for Czech names. |
@@ -117,7 +117,7 @@ Fix shape: a box table (the `REGIONS-*.md` files already carry padded boxes comp
 `packaging/build_packs.py:1471-1474` accepts exactly three shapes: `base`, `us`, or `re.fullmatch(r'[A-Z]{2}', name)`.
 `CZ` passes. `CZ-10` does not, and the error is `unknown map set CZ-10`.
 
-The manifest itself is more generous: map ids are checked by `NAME` (`engine/setup/manifest.py:24`), which allows
+The manifest itself is more generous: map ids are checked by `NAME` (`engine/setup/manifest.py:26`), which allows
 hyphens, so `maps` could already carry `DE-BY`-style ids — but see §3.2 for their address indexes.
 
 ### 3.5 Names and per-state lists
@@ -191,8 +191,9 @@ Not addresses — places. Six steps, no engine change at all:
    Skip `tools/build_coast.py`.
 3. **Build `places.sqlite`.** Same tables as `tools/build_places.py:28-29`: `place` + `place_fts`, filled from the
    `layer='place'` features and named `poi` rows of that same file. Set `source='OpenStreetMap'` — the pack cut copies
-   exactly that value (`packaging/build_packs.py:1353, 1409`) — and use `rank` 1 for cities, 3 for towns, 4 for the
-   rest, which is what the ordering in `server.py:1435` expects.
+   exactly that value (`packaging/build_packs.py:1409`) — and use `rank` 1 for cities, 3 for towns, 4 for the rest,
+   which is what the ordering in `server.py:1435` expects. The base set works the opposite way, taking every place whose
+   `source` is not `OpenStreetMap` (`packaging/build_packs.py:1353`), so OSM places reach a pack only through that cut.
 4. **Write `map-set.json`** with `{"name": "CZ", "files": {...}, "bytes": N, "seconds": N}`, plus
    `derived/geo/national-status.json` and `derived/geo/socal-cells.json` = `[]`.
 5. **Drop the folder into a library's `derived/geo/`** and start the app; `PLACEDB` and `MAPDB` are fixed paths
@@ -202,7 +203,7 @@ Not addresses — places. Six steps, no engine change at all:
 
 To make it an **installable** map set, the zip must contain `map-set.json` and the files it lists
 (`engine/setup/install.py:321-333`) and a `maps` entry must exist in the manifest — that entry's `id` `CZ` passes
-`NAME` (`engine/setup/manifest.py:24`) and `[A-Z]{2}` where it matters. Nothing else is required: the app does not need
+`NAME` (`engine/setup/manifest.py:26`) and `[A-Z]{2}` where it matters. Nothing else is required: the app does not need
 `water`, `terrain`, `buildings`, `crops` or `atlas` to be non-empty.
 
 To make it **publishable** by `packaging/state_maps.py` you additionally need the full `ALLOWED` file set
@@ -223,7 +224,7 @@ and the iPad port.
 | `CZ` in the publishing lists (`NAMES`, release order) | `packaging/state_maps.py:34-41, 57-60` | 1 h |
 | Place builder for any `map.sqlite`/`national.sqlite` (parameterise the label and the input) | `tools/build_places.py:49-59` | 2–4 h |
 | Empty-schema siblings so the `ALLOWED` set passes (crops, atlas) | reuse `empty_like`, `packaging/build_packs.py:1306-1323` | 2 h |
-| UI wording: "state" → "region", `map.js:108, 875`, `setup.js:110, 274-280` | 2 files | 2 h |
+| UI wording: "state" → "region", `web/map.js:108, 875`, `web/setup.js:110, 274-280` | 2 files | 2 h |
 | `onMap` bbox, `US` fallback view, `MAP_CREDIT` | `server.py:1444`, `web/map.js:9, 114`, `packaging/build_packs.py:63` | 3 h |
 | Metric distances | `web/map.js:82`, `server.py:1388` | 2 h |
 
@@ -276,15 +277,19 @@ is a data-format decision that should be made once for all regions rather than p
 
 ## 7. What this reading did not establish
 
-- No build was run and no data was downloaded; every claim is a reading of the code at commit `9542e80`.
+- No build was run and no data was downloaded; every claim is a reading of the code at commit `9542e80`. The branch
+  head is `2a57de1`, and `git diff --stat 9542e80 HEAD` lists only the three new Czechia documents, so the code read is
+  identical to the code at the head.
 - Whether Overture's address theme carries Czech rows, and how many, was not measured. `tools/build_addresses.py:32`
   filters on a `country` column, so the pipeline is the right one; Germany's 19.3 M rows
   (`docs/REGIONS-DE.md:152-155`) show what the count looks like when a country is covered.
-- Czech postcode and address-order conventions (PSČ as `110 00`, street before number, orientation numbers such as
-  `12/345`) are general knowledge about the country, not something this repository documents; they should be checked
-  against Česká pošta's addressing rules before the parser is written.
-- The ISO 3166-2:CZ codes `CZ-10` … `CZ-80` are quoted from general knowledge; the other region files also note that
-  their codes were not checked against the ISO site (`docs/REGIONS-DE.md:37-38`).
+- Czech postcode and address-order conventions are quoted, not derived here: the PSČ form `110 00` and the
+  street-before-number order are the ones read for [REGIONS-CZ.md](REGIONS-CZ.md), which cites Česká pošta's page on
+  addressing and its rule "Mezi trojčíslím a dvojčíslím PSČ je jedna mezera" (opened there). The two-number house form
+  `12/345` is described there without a source of its own.
+- The ISO 3166-2:CZ codes `CZ-10` … `CZ-80` are those [REGIONS-CZ.md](REGIONS-CZ.md) uses, checked there against OMG's
+  ISO 3166-2 ontology; this file claims no reading of its own, and neither file checked them against the ISO site, as
+  the other region files also note for theirs (`docs/REGIONS-DE.md:37-38`).
 - The SQLite `unicode61` diacritic folding assumed in §3.6 is a documented default, not something this repository tests.
 - Whether one `CZ` region is the right granularity (78,871 km², 10.9 M people) is a product decision, not a code one;
   the precedent in this repository for small countries is one region (`GY`, `PY`, `IE`, `LK` in the `REGIONS-*.md`
