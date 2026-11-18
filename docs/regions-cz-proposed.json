@@ -1,0 +1,938 @@
+{
+  "about": "Proposed region definitions for detailed maps of Czechia: 14 regions (kraje), one region each. See docs/REGIONS-CZ.md.",
+  "status": "proposal",
+  "checked": "2026-11-18",
+  "codes": {
+    "proposal": "Current ISO 3166-2:CZ codes: CZ-10 (Prague), CZ-20, CZ-31, CZ-32, CZ-41, CZ-42, CZ-51, CZ-52, CZ-53, CZ-63, CZ-64, CZ-71, CZ-72, CZ-80.",
+    "why": "These are the codes ISO 3166-2:CZ defines today (two digits per region). The letter codes CZ-PR, CZ-JC, CZ-JM, CZ-KA, CZ-KR, CZ-LI, CZ-OL, CZ-PA, CZ-PL, CZ-ST, CZ-US, CZ-VY, CZ-ZL and CZ-MO were replaced by the numeric ones in November 2016 and are no longer ISO codes. A bare CZ is not in STATE_CODES (engine/address_search.py); PR, MO and PA are (Puerto Rico, Missouri, Pennsylvania), and US is the ISO 3166-1 code of the United States.",
+    "verified": "Read from Wikipedia's copy of ISO 3166-2:CZ on 2026-11-18, including its change log for 2016-11-15. Not checked against the ISO Online Browsing Platform.",
+    "open_question": "The numeric code part fails the [A-Z]{2} rule for address indexes (engine/setup/manifest.py line 72, engine/setup/install.py line 267) and the [A-Z]{2} dispatch in packaging/build_packs.py build_map()."
+  },
+  "layer_keys": {
+    "terrain": "terrain.sqlite",
+    "water": "water.sqlite",
+    "dams": "water.sqlite (nid part today)",
+    "crops": "crops.sqlite",
+    "buildings": "buildings.sqlite",
+    "places": "places.sqlite",
+    "addresses": "derived/geo/addresses/<code>.sqlite",
+    "pois": "poi rows in national.sqlite"
+  },
+  "licences": {
+    "CC-BY-4.0": {
+      "name": "Creative Commons Attribution 4.0 International",
+      "url": "https://creativecommons.org/licenses/by/4.0/",
+      "attribution": "ČÚZK asks for the source in the form \"ČÚZK, [rok]\" (year of the data used), the metadata passed on, the licence linked, and a description of any change to a modified work.",
+      "attribution_sentence": null,
+      "attribution_sentence_note": "Missing: ČÚZK publishes the format \"ČÚZK, [rok]\" but no worked example and no English sentence, so there is nothing to quote verbatim. Not checked on the CC site either.",
+      "share_alike": false,
+      "verified": "opened 2026-11-18: ČÚZK terms page and open-data page; the CC BY 4.0 text itself was not reopened"
+    },
+    "CC-BY-SA-4.0": {
+      "name": "Creative Commons Attribution-ShareAlike 4.0 International",
+      "url": "https://creativecommons.org/licenses/by-sa/4.0/",
+      "attribution": "Credit, link the licence, note changes, and share adaptations under the same licence.",
+      "share_alike": true,
+      "verified": "EuroCrops repository opened 2026-11-18; licence text not reopened"
+    },
+    "ODbL-1.0": {
+      "name": "Open Database License 1.0",
+      "url": "https://opendatacommons.org/licenses/odbl/1-0/",
+      "attribution": "\"© OpenStreetMap contributors\"",
+      "share_alike": true,
+      "verified": "as for the US map"
+    },
+    "CDLA-Permissive-2.0": {
+      "name": "Community Data License Agreement - Permissive 2.0",
+      "url": "https://cdla.dev/permissive-2-0/",
+      "attribution": "none required",
+      "share_alike": false,
+      "verified": "named in Microsoft's repository README, opened 2026-11-18; licence text not reopened"
+    },
+    "Copernicus-WorldDEM-30": {
+      "name": "Copernicus WorldDEM-30 licence",
+      "url": "see docs/regions-proposed.json",
+      "attribution": "see docs/regions-proposed.json",
+      "share_alike": false,
+      "verified": "AWS registry page opened 2026-11-18, which links the licence on dataspace.copernicus.eu; licence text not read"
+    },
+    "LPIS-not-copyrighted": {
+      "name": "No rights claimed (data.gov.cz record: work, database and sui generis rights all \"Not copyrighted\" / \"Not protected\")",
+      "url": "https://data.gov.cz/dataset?iri=https://data.gov.cz/zdroj/datov%C3%A9-sady/00020478/9c2678534cc534ebb99af3b449119244",
+      "attribution": "none stated in the record",
+      "share_alike": false,
+      "verified": "data.gov.cz LPIS record opened 2026-11-18; the Ministry's own terms page was not opened"
+    }
+  },
+  "country_layers": {
+    "terrain": [
+      {
+        "dataset": "DMR 5G (digital relief model, 5th generation), LAZ per SM5 map sheet",
+        "publisher": "ČÚZK / Zeměměřický úřad",
+        "url": "https://geoportal.cuzk.cz/Default.aspx?menu=3130&mode=TextMeta&side=vyskopis&metadataID=CZ-CUZK-DMR5G-V",
+        "licence": "CC-BY-4.0",
+        "verified": "2026-11-18",
+        "role": "best detail",
+        "notes": "Airborne laser scanning 2009-2013, completed 2016-06-30; mean height error 0.18 m in open terrain, 0.3 m under forest; S-JTSK / Bpv; no fixed update cycle, product last updated 2026-06-01. A point cloud: needs rasterisation before tools/build_terrain.py can read it."
+      },
+      {
+        "dataset": "DMR 4G (digital relief model, 4th generation), regular 5 x 5 m grid, TIFF and LAZ per SM5 map sheet",
+        "publisher": "ČÚZK / Zeměměřický úřad",
+        "url": "https://geoportal.cuzk.cz/Default.aspx?menu=3130&mode=TextMeta&side=vyskopis&metadataID=CZ-CUZK-DMR4G-V",
+        "licence": "CC-BY-4.0",
+        "verified": "2026-11-18",
+        "role": "primary",
+        "notes": "Mean height error 0.3 m in open terrain, 1 m under forest; Bpv heights; TIFF Atom service DMR4G-SJTSK-TIFF. 5 m is finer than the US 1 arc-second (~30 m). One file per SM5 sheet; one sheet measured at 768,908 bytes (BENE09)."
+      },
+      {
+        "dataset": "INSPIRE elevation grid (EL-GRID), TIFF, ETRS89/TM33, one file for the whole state",
+        "publisher": "ČÚZK",
+        "url": "https://atom.cuzk.gov.cz/EL-GRID/EL-GRID.xml",
+        "licence": "CC-BY-4.0",
+        "verified": "2026-11-18 (Atom feed and file length)",
+        "role": "whole-country alternative",
+        "notes": "Zip is 7,685,616,237 bytes. Grid spacing not stated on the feed; not checked."
+      },
+      {
+        "dataset": "Copernicus DEM GLO-30 Public",
+        "publisher": "ESA / Airbus, distributed by Sinergise on AWS",
+        "url": "https://registry.opendata.aws/copernicus-dem/",
+        "licence": "Copernicus-WorldDEM-30",
+        "verified": "2026-11-18 (registry page); licence text not read",
+        "role": "fallback",
+        "notes": "Surface model: relief follows canopy and roofs. Czechia tile completeness not checked."
+      }
+    ],
+    "water": [
+      {
+        "dataset": "INSPIRE physical waters (HY-P), GeoPackage, whole state",
+        "publisher": "ČÚZK",
+        "url": "https://atom.cuzk.gov.cz/HY-P/HY-P.xml",
+        "licence": "CC-BY-4.0",
+        "verified": "2026-11-18 (Atom feed and file length)",
+        "role": "primary (areas)",
+        "notes": "Zip is 454,051,469 bytes. Derived from ZABAGED water features."
+      },
+      {
+        "dataset": "INSPIRE hydrographic network (HY-NET), GeoPackage, whole state",
+        "publisher": "ČÚZK",
+        "url": "https://atom.cuzk.gov.cz/HY-NET/HY-NET.xml",
+        "licence": "CC-BY-4.0",
+        "verified": "2026-11-18 (Atom feed and file length)",
+        "role": "primary (lines)",
+        "notes": "Zip is 194,208,037 bytes."
+      },
+      {
+        "dataset": "DIBAVOD (digital base of water-management data), SHP by object group",
+        "publisher": "VÚV T. G. Masaryka",
+        "url": "https://www.dibavod.cz/27/struktura-dibavod.html",
+        "licence": null,
+        "verified": "not checked — no licence statement found on the pages opened; the project page asks anyone who wants to use the data to contact VÚV",
+        "role": "not proposed",
+        "notes": "Long-term unmaintained (\"not currently updated\"); only a few datasets are refreshed. Water-course network, reservoirs, basins, flood areas."
+      },
+      {
+        "dataset": "OSM waterways and water areas (Geofabrik Czechia extract)",
+        "publisher": "OpenStreetMap contributors",
+        "url": "https://download.geofabrik.de/europe/czech-republic.html",
+        "licence": "ODbL-1.0",
+        "verified": "2026-11-18",
+        "role": "supplement",
+        "notes": "czech-republic-latest.osm.pbf, 908 MB, data up to 2026-11-13T21:22:20Z."
+      }
+    ],
+    "dams": [
+      {
+        "dataset": "Dams in OSM (waterway=dam, and reservoirs as areas)",
+        "publisher": "OpenStreetMap contributors",
+        "url": "https://wiki.openstreetmap.org/wiki/Tag:waterway%3Ddam",
+        "licence": "ODbL-1.0",
+        "verified": "search only — tag wiki not opened in this change",
+        "role": "primary",
+        "notes": "No open Czech dam inventory was looked for beyond DIBAVOD object group I (objects on watercourses), whose licence is missing."
+      }
+    ],
+    "crops": [
+      {
+        "dataset": "LPIS public export: farmer blocks (DPB), physical blocks (PB), vineyards (OPV), landscape features (EVP), SHP",
+        "publisher": "Ministerstvo zemědělství (Ministry of Agriculture)",
+        "url": "https://mze.gov.cz/public/web/mze/farmar/LPIS/uzivatelske-prirucky/prirucky-pro-verejny-lpis/export-dat-lpis.html",
+        "licence": "LPIS-not-copyrighted",
+        "verified": "2026-11-18 (export page and data.gov.cz record)",
+        "role": "primary",
+        "notes": "Weekly generation, SHP per cadastral territory or per district, plus XML (current and historic). Declared land use, so areas are exact sums, not satellite pixels. Vineyards are a separate entity (OPV)."
+      },
+      {
+        "dataset": "EuroCrops 2.0 (harmonised LPIS crop parcels with the HCAT taxonomy)",
+        "publisher": "EuroCrops project (DLR / BMWK funding)",
+        "url": "https://github.com/maja601/EuroCrops",
+        "licence": "CC-BY-SA-4.0",
+        "verified": "2026-11-18 (repository page)",
+        "role": "alternative",
+        "notes": "Czechia is one of the participating countries. Share-alike: a crop layer built from it inherits CC BY-SA 4.0."
+      }
+    ],
+    "buildings": [
+      {
+        "dataset": "ZABAGED (fundamental base of geographic data), GeoPackage, whole state, one ZIP",
+        "publisher": "ČÚZK / Zeměměřický úřad",
+        "url": "https://atom.cuzk.gov.cz/ZABAGED-GPKG/ZABAGED-GPKG.xml",
+        "licence": "CC-BY-4.0",
+        "verified": "2026-11-18 (Atom feed and file length)",
+        "role": "primary",
+        "notes": "Zip: 5,805,826,649 bytes in S-JTSK (EPSG:5514), 6,742,892,709 bytes in ETRS89/TM33 (EPSG:3045), dated 2026-10-04. Building outlines are one of the 142 planimetric feature types; the layer name was not confirmed."
+      },
+      {
+        "dataset": "INSPIRE buildings (BU), GML, one file per obec",
+        "publisher": "ČÚZK",
+        "url": "https://atom.cuzk.gov.cz/BU/BU.xml",
+        "licence": "CC-BY-4.0",
+        "verified": "2026-11-18 (Atom feed)",
+        "role": "alternative",
+        "notes": "Built daily where an obec changed. One file per obec, roughly 6,258 of them, so a whole country means a merge step. No heights."
+      },
+      {
+        "dataset": "Overture buildings",
+        "publisher": "Overture Maps Foundation",
+        "url": "https://docs.overturemaps.org/attribution",
+        "licence": "ODbL-1.0",
+        "verified": "2026-11-18 for the attribution page; the Czech mix of sources is not described there",
+        "role": "fill",
+        "notes": "Which sources make up the Czech buildings theme was not checked."
+      },
+      {
+        "dataset": "Microsoft Global ML Building Footprints, region CzechRepublic",
+        "publisher": "Microsoft",
+        "url": "https://github.com/microsoft/GlobalMLBuildingFootprints",
+        "licence": "CDLA-Permissive-2.0",
+        "verified": "2026-11-18 (README and dataset-links.csv)",
+        "role": "fill",
+        "notes": "Czechia is one of the 225 regions in dataset-links.csv (release 2026-07-24); no heights for Czechia were confirmed."
+      }
+    ],
+    "places": [
+      {
+        "dataset": "Geonames - database of geographic names of the Czech Republic, GeoPackage, whole state",
+        "publisher": "ČÚZK / Zeměměřický úřad",
+        "url": "https://geoportal.cuzk.gov.cz/Default.aspx/Dokumenty/INC/TextMeta/html/getHTML.aspx?mode=TextMeta&side=Geonames&metadataID=CZ-CUZK-GEONAMES-V&head_tab=sekce-02-gp&menu=261",
+        "licence": "CC-BY-4.0",
+        "verified": "2026-11-18 (product page and Atom feed; zip 46,625,753 bytes)",
+        "role": "primary",
+        "notes": "Standardised names for about 165 types of named object, at the detail of the 1:10 000 base map; whole dataset revised on a three-year cycle, published monthly."
+      },
+      {
+        "dataset": "RÚIAN municipalities and their parts (obec, část obce)",
+        "publisher": "ČÚZK",
+        "url": "https://cuzk.gov.cz/Predpisy/Podminky-poskytovani-prostor-dat-a-sitovych-sluzeb/Podminky-poskytovani-prostorovych-dat-CUZK.aspx",
+        "licence": "CC-BY-4.0",
+        "verified": "2026-11-18 (terms page lists the RÚIAN VFR as open data)",
+        "role": "primary",
+        "notes": "6,258 obec and 77 okres in the AU file that was downloaded; no population figures were collected."
+      },
+      {
+        "dataset": "OSM named places",
+        "publisher": "OpenStreetMap contributors",
+        "url": "https://download.geofabrik.de/europe/czech-republic.html",
+        "licence": "ODbL-1.0",
+        "verified": "2026-11-18",
+        "role": "supplement"
+      }
+    ],
+    "addresses": [
+      {
+        "dataset": "RÚIAN address places, CSV per obec (monthly), with obec, městský obvod, část obce, ulice, číslo domovní, číslo orientační and its letter, PSČ, S-JTSK Y/X",
+        "publisher": "ČÚZK",
+        "url": "https://atom.cuzk.gov.cz/RUIAN-CSV-ADR-OB/RUIAN-CSV-ADR-OB.xml",
+        "licence": "CC-BY-4.0",
+        "verified": "2026-11-18 (product page opened; says CC BY 4.0)",
+        "role": "primary",
+        "notes": "6,258 files per month, generated on the first day of each month for the last day of the previous month. Also a whole-state variant (menu 3323)."
+      },
+      {
+        "dataset": "INSPIRE addresses (AD), GML per obec, daily",
+        "publisher": "ČÚZK",
+        "url": "https://services.cuzk.gov.cz/gml/inspire/ad/epsg-4258/",
+        "licence": "CC-BY-4.0",
+        "verified": "2026-11-18 (directory listing opened)",
+        "role": "alternative",
+        "notes": "One ZIP per obec, a few KB to a few hundred KB each (examples seen: 4.6 KB to 404.7 KB)."
+      },
+      {
+        "dataset": "Overture addresses (Czechia rows come from ČÚZK, per the attribution page)",
+        "publisher": "Overture Maps Foundation / ČÚZK",
+        "url": "https://docs.overturemaps.org/attribution",
+        "licence": "CC-BY-4.0",
+        "verified": "2026-11-18 (attribution page: \"Contains data from Český úřad zeměměřický a katastrální (ČÚZK). Available under CC BY 4.0.\")",
+        "role": "the route the current tool already reads",
+        "notes": "Row count for Czechia not measured."
+      }
+    ],
+    "pois": [
+      {
+        "dataset": "OSM amenities as the US map uses them",
+        "publisher": "OpenStreetMap contributors",
+        "url": "https://taginfo.geofabrik.de/europe:czech-republic/",
+        "licence": "ODbL-1.0",
+        "verified": "2026-11-18 (taginfo API)",
+        "role": "primary",
+        "counts_as_of": "2026-11-17T21:23Z",
+        "counts": {
+          "amenity=pharmacy": 2562,
+          "amenity=fire_station": 6776,
+          "amenity=police": 1152,
+          "amenity=hospital": 307,
+          "amenity=drinking_water": 1510,
+          "man_made=water_well": 2574,
+          "emergency=water_tank": 206,
+          "emergency=drinking_water": 0,
+          "amenity=school": 4929,
+          "amenity=post_office": 3062,
+          "amenity=fuel": 3630,
+          "amenity=doctors": 1501,
+          "amenity=clinic": 595,
+          "shop=supermarket": 2941
+        },
+        "keys": {
+          "building": 5052339,
+          "addr:housenumber": 3095242,
+          "addr:postcode": 3094517,
+          "addr:street": 1642530,
+          "addr:place": 2614898
+        }
+      }
+    ]
+  },
+  "not_open_or_not_used": {
+    "dibavod": "No licence statement on the pages opened; the project asks users to contact VÚV. Not proposed until that is settled.",
+    "cuzk_aerial": "Aerial survey images and archive material are excluded from ČÚZK open data by ČÚZK's own open-data page.",
+    "eurocrops": "CC BY-SA 4.0, which would make a crop layer share-alike; proposed only as an alternative."
+  },
+  "addressing": {
+    "postal_code": {
+      "format": "Five digits, written as three digits, one space, two digits: \"110 00\", \"602 00\".",
+      "example_pattern": "000 00",
+      "source": "Česká pošta, \"Provedení a úprava adresní strany obálek a psaní\", opened 2026-11-18: \"Mezi trojčíslím a dvojčíslím PSČ je jedna mezera\""
+    },
+    "order": "Street, then house number, then postcode and town on the last line (\"Karlova 12, 110 00 Praha 1\"); the postcode and the delivery place share the last line, and the name of the část obce may be added to the obec.",
+    "house_numbers": "Two numbers in one address: číslo popisné (descriptive number, unique within a část obce) and číslo orientační (orientation number within a street), written \"1234/56\" and often with a letter (\"12a\", \"56/3b\"). RÚIAN keeps them as separate fields (CisloDomovni, CisloOrientacni, CisloOrientacniPismeno) plus a type (č.p. or č.ev.).",
+    "notes": "normalize() in engine/address_search.py keeps only a-z and 0-9, so \"náměstí\" becomes \"n m st\" and \"Česká\" becomes \"esk\"; is_address_query() needs a digit first, and Czech addresses start with the street; _parts() reads a postcode only as the last word and only as five digits without a space, while the PSČ comes before the town and carries a space; tools/build_addresses.py keeps only country = 'US' and cuts the postcode to five characters. Read in this repository on 2026-11-18."
+  },
+  "regions": [
+    {
+      "code": "CZ-10",
+      "name": "Hlavní město Praha",
+      "name_en": "Prague",
+      "country": "Czechia",
+      "country_iso": "CZ",
+      "admin_level": "capital city (hlavní město)",
+      "national_code": "19",
+      "okresy": 1,
+      "obce": 1,
+      "bbox": {
+        "west": 14.2244,
+        "south": 49.9419,
+        "east": 14.7068,
+        "north": 50.1774,
+        "source": {
+          "dataset": "INSPIRE Administrative Units (AU), Czech Republic, national level Kraj, ETRS89 (EPSG:4258)",
+          "publisher": "ČÚZK (Czech Office for Surveying, Mapping and Cadastre)",
+          "licence": "CC-BY-4.0",
+          "url": "https://services.cuzk.gov.cz/gml/inspire/au/epsg-4258/1.zip",
+          "verified": "2026-11-18 (file downloaded, 72,842,120 bytes, every vertex read)"
+        },
+        "padded_0_15": [
+          14.07,
+          49.79,
+          14.86,
+          50.33
+        ],
+        "padded_note": "west, south, east, north plus or minus 0.15 deg, rounded outward to 0.01 deg, the same margin map_sets.state uses for US states"
+      },
+      "layers": "country_layers",
+      "osm_extract": {
+        "name": "praha",
+        "pbf_url": "https://download.geofabrik.de/europe/czech-republic/praha-latest.osm.pbf",
+        "pbf_bytes": 45153187,
+        "gpkg_url": "https://download.geofabrik.de/europe/czech-republic/praha-latest-free.gpkg.zip",
+        "gpkg_bytes": 54698497,
+        "verified": "2026-11-18 (HTTP HEAD)"
+      }
+    },
+    {
+      "code": "CZ-20",
+      "name": "Středočeský kraj",
+      "name_en": "Central Bohemia",
+      "country": "Czechia",
+      "country_iso": "CZ",
+      "admin_level": "region (kraj)",
+      "national_code": "27",
+      "okresy": 12,
+      "obce": 1144,
+      "bbox": {
+        "west": 13.3965,
+        "south": 49.5013,
+        "east": 15.5355,
+        "north": 50.6189,
+        "source": {
+          "dataset": "INSPIRE Administrative Units (AU), Czech Republic, national level Kraj, ETRS89 (EPSG:4258)",
+          "publisher": "ČÚZK (Czech Office for Surveying, Mapping and Cadastre)",
+          "licence": "CC-BY-4.0",
+          "url": "https://services.cuzk.gov.cz/gml/inspire/au/epsg-4258/1.zip",
+          "verified": "2026-11-18 (file downloaded, 72,842,120 bytes, every vertex read)"
+        },
+        "padded_0_15": [
+          13.24,
+          49.35,
+          15.69,
+          50.77
+        ],
+        "padded_note": "west, south, east, north plus or minus 0.15 deg, rounded outward to 0.01 deg, the same margin map_sets.state uses for US states"
+      },
+      "layers": "country_layers",
+      "osm_extract": {
+        "name": "stredocesky",
+        "pbf_url": "https://download.geofabrik.de/europe/czech-republic/stredocesky-latest.osm.pbf",
+        "pbf_bytes": 182113855,
+        "gpkg_url": "https://download.geofabrik.de/europe/czech-republic/stredocesky-latest-free.gpkg.zip",
+        "gpkg_bytes": 293825711,
+        "verified": "2026-11-18 (HTTP HEAD)"
+      },
+      "contains": [
+        "CZ-10"
+      ],
+      "contains_note": "Prague lies inside the Central Bohemian Region; the CZ-20 padded box contains the whole CZ-10 padded box",
+      "padded_box_touches": [
+        "Germany",
+        "Poland"
+      ],
+      "padded_box_touches_note": "tested against the Natural Earth 1:110m outlines shipped in web/world-context.json, not against a border dataset"
+    },
+    {
+      "code": "CZ-31",
+      "name": "Jihočeský kraj",
+      "name_en": "South Bohemia",
+      "country": "Czechia",
+      "country_iso": "CZ",
+      "admin_level": "region (kraj)",
+      "national_code": "35",
+      "okresy": 7,
+      "obce": 624,
+      "bbox": {
+        "west": 13.536,
+        "south": 48.5518,
+        "east": 15.6042,
+        "north": 49.6211,
+        "source": {
+          "dataset": "INSPIRE Administrative Units (AU), Czech Republic, national level Kraj, ETRS89 (EPSG:4258)",
+          "publisher": "ČÚZK (Czech Office for Surveying, Mapping and Cadastre)",
+          "licence": "CC-BY-4.0",
+          "url": "https://services.cuzk.gov.cz/gml/inspire/au/epsg-4258/1.zip",
+          "verified": "2026-11-18 (file downloaded, 72,842,120 bytes, every vertex read)"
+        },
+        "padded_0_15": [
+          13.38,
+          48.4,
+          15.76,
+          49.78
+        ],
+        "padded_note": "west, south, east, north plus or minus 0.15 deg, rounded outward to 0.01 deg, the same margin map_sets.state uses for US states"
+      },
+      "layers": "country_layers",
+      "osm_extract": {
+        "name": "jihocesky",
+        "pbf_url": "https://download.geofabrik.de/europe/czech-republic/jihocesky-latest.osm.pbf",
+        "pbf_bytes": 97268666,
+        "gpkg_url": "https://download.geofabrik.de/europe/czech-republic/jihocesky-latest-free.gpkg.zip",
+        "gpkg_bytes": 186442923,
+        "verified": "2026-11-18 (HTTP HEAD)"
+      },
+      "padded_box_touches": [
+        "Austria"
+      ],
+      "padded_box_touches_note": "tested against the Natural Earth 1:110m outlines shipped in web/world-context.json, not against a border dataset"
+    },
+    {
+      "code": "CZ-32",
+      "name": "Plzeňský kraj",
+      "name_en": "Plzeň",
+      "country": "Czechia",
+      "country_iso": "CZ",
+      "admin_level": "region (kraj)",
+      "national_code": "43",
+      "okresy": 7,
+      "obce": 501,
+      "bbox": {
+        "west": 12.4005,
+        "south": 48.9413,
+        "east": 13.8403,
+        "north": 50.1044,
+        "source": {
+          "dataset": "INSPIRE Administrative Units (AU), Czech Republic, national level Kraj, ETRS89 (EPSG:4258)",
+          "publisher": "ČÚZK (Czech Office for Surveying, Mapping and Cadastre)",
+          "licence": "CC-BY-4.0",
+          "url": "https://services.cuzk.gov.cz/gml/inspire/au/epsg-4258/1.zip",
+          "verified": "2026-11-18 (file downloaded, 72,842,120 bytes, every vertex read)"
+        },
+        "padded_0_15": [
+          12.25,
+          48.79,
+          14.0,
+          50.26
+        ],
+        "padded_note": "west, south, east, north plus or minus 0.15 deg, rounded outward to 0.01 deg, the same margin map_sets.state uses for US states"
+      },
+      "layers": "country_layers",
+      "osm_extract": {
+        "name": "plzensky",
+        "pbf_url": "https://download.geofabrik.de/europe/czech-republic/plzensky-latest.osm.pbf",
+        "pbf_bytes": 71917389,
+        "gpkg_url": "https://download.geofabrik.de/europe/czech-republic/plzensky-latest-free.gpkg.zip",
+        "gpkg_bytes": 138895592,
+        "verified": "2026-11-18 (HTTP HEAD)"
+      },
+      "padded_box_touches": [
+        "Germany"
+      ],
+      "padded_box_touches_note": "tested against the Natural Earth 1:110m outlines shipped in web/world-context.json, not against a border dataset"
+    },
+    {
+      "code": "CZ-41",
+      "name": "Karlovarský kraj",
+      "name_en": "Karlovy Vary",
+      "country": "Czechia",
+      "country_iso": "CZ",
+      "admin_level": "region (kraj)",
+      "national_code": "51",
+      "okresy": 3,
+      "obce": 134,
+      "bbox": {
+        "west": 12.0906,
+        "south": 49.8904,
+        "east": 13.3018,
+        "north": 50.4603,
+        "source": {
+          "dataset": "INSPIRE Administrative Units (AU), Czech Republic, national level Kraj, ETRS89 (EPSG:4258)",
+          "publisher": "ČÚZK (Czech Office for Surveying, Mapping and Cadastre)",
+          "licence": "CC-BY-4.0",
+          "url": "https://services.cuzk.gov.cz/gml/inspire/au/epsg-4258/1.zip",
+          "verified": "2026-11-18 (file downloaded, 72,842,120 bytes, every vertex read)"
+        },
+        "padded_0_15": [
+          11.94,
+          49.74,
+          13.46,
+          50.62
+        ],
+        "padded_note": "west, south, east, north plus or minus 0.15 deg, rounded outward to 0.01 deg, the same margin map_sets.state uses for US states"
+      },
+      "layers": "country_layers",
+      "osm_extract": {
+        "name": "karlovarsky",
+        "pbf_url": "https://download.geofabrik.de/europe/czech-republic/karlovarsky-latest.osm.pbf",
+        "pbf_bytes": 30885544,
+        "gpkg_url": "https://download.geofabrik.de/europe/czech-republic/karlovarsky-latest-free.gpkg.zip",
+        "gpkg_bytes": 58434888,
+        "verified": "2026-11-18 (HTTP HEAD)"
+      },
+      "padded_box_touches": [
+        "Germany"
+      ],
+      "padded_box_touches_note": "tested against the Natural Earth 1:110m outlines shipped in web/world-context.json, not against a border dataset"
+    },
+    {
+      "code": "CZ-42",
+      "name": "Ústecký kraj",
+      "name_en": "Ústí nad Labem",
+      "country": "Czechia",
+      "country_iso": "CZ",
+      "admin_level": "region (kraj)",
+      "national_code": "60",
+      "okresy": 7,
+      "obce": 354,
+      "bbox": {
+        "west": 12.9403,
+        "south": 50.077,
+        "east": 14.6529,
+        "north": 51.0557,
+        "source": {
+          "dataset": "INSPIRE Administrative Units (AU), Czech Republic, national level Kraj, ETRS89 (EPSG:4258)",
+          "publisher": "ČÚZK (Czech Office for Surveying, Mapping and Cadastre)",
+          "licence": "CC-BY-4.0",
+          "url": "https://services.cuzk.gov.cz/gml/inspire/au/epsg-4258/1.zip",
+          "verified": "2026-11-18 (file downloaded, 72,842,120 bytes, every vertex read)"
+        },
+        "padded_0_15": [
+          12.79,
+          49.92,
+          14.81,
+          51.21
+        ],
+        "padded_note": "west, south, east, north plus or minus 0.15 deg, rounded outward to 0.01 deg, the same margin map_sets.state uses for US states"
+      },
+      "layers": "country_layers",
+      "osm_extract": {
+        "name": "ustecky",
+        "pbf_url": "https://download.geofabrik.de/europe/czech-republic/ustecky-latest.osm.pbf",
+        "pbf_bytes": 112420789,
+        "gpkg_url": "https://download.geofabrik.de/europe/czech-republic/ustecky-latest-free.gpkg.zip",
+        "gpkg_bytes": 193345107,
+        "verified": "2026-11-18 (HTTP HEAD)"
+      },
+      "padded_box_touches": [
+        "Germany"
+      ],
+      "padded_box_touches_note": "tested against the Natural Earth 1:110m outlines shipped in web/world-context.json, not against a border dataset"
+    },
+    {
+      "code": "CZ-51",
+      "name": "Liberecký kraj",
+      "name_en": "Liberec",
+      "country": "Czechia",
+      "country_iso": "CZ",
+      "admin_level": "region (kraj)",
+      "national_code": "78",
+      "okresy": 4,
+      "obce": 215,
+      "bbox": {
+        "west": 14.3426,
+        "south": 50.4719,
+        "east": 15.6326,
+        "north": 51.0232,
+        "source": {
+          "dataset": "INSPIRE Administrative Units (AU), Czech Republic, national level Kraj, ETRS89 (EPSG:4258)",
+          "publisher": "ČÚZK (Czech Office for Surveying, Mapping and Cadastre)",
+          "licence": "CC-BY-4.0",
+          "url": "https://services.cuzk.gov.cz/gml/inspire/au/epsg-4258/1.zip",
+          "verified": "2026-11-18 (file downloaded, 72,842,120 bytes, every vertex read)"
+        },
+        "padded_0_15": [
+          14.19,
+          50.32,
+          15.79,
+          51.18
+        ],
+        "padded_note": "west, south, east, north plus or minus 0.15 deg, rounded outward to 0.01 deg, the same margin map_sets.state uses for US states"
+      },
+      "layers": "country_layers",
+      "osm_extract": {
+        "name": "liberecky",
+        "pbf_url": "https://download.geofabrik.de/europe/czech-republic/liberecky-latest.osm.pbf",
+        "pbf_bytes": 47137109,
+        "gpkg_url": "https://download.geofabrik.de/europe/czech-republic/liberecky-latest-free.gpkg.zip",
+        "gpkg_bytes": 82155846,
+        "verified": "2026-11-18 (HTTP HEAD)"
+      },
+      "padded_box_touches": [
+        "Germany",
+        "Poland"
+      ],
+      "padded_box_touches_note": "tested against the Natural Earth 1:110m outlines shipped in web/world-context.json, not against a border dataset"
+    },
+    {
+      "code": "CZ-52",
+      "name": "Královéhradecký kraj",
+      "name_en": "Hradec Králové",
+      "country": "Czechia",
+      "country_iso": "CZ",
+      "admin_level": "region (kraj)",
+      "national_code": "86",
+      "okresy": 5,
+      "obce": 448,
+      "bbox": {
+        "west": 15.1042,
+        "south": 50.0384,
+        "east": 16.5855,
+        "north": 50.7805,
+        "source": {
+          "dataset": "INSPIRE Administrative Units (AU), Czech Republic, national level Kraj, ETRS89 (EPSG:4258)",
+          "publisher": "ČÚZK (Czech Office for Surveying, Mapping and Cadastre)",
+          "licence": "CC-BY-4.0",
+          "url": "https://services.cuzk.gov.cz/gml/inspire/au/epsg-4258/1.zip",
+          "verified": "2026-11-18 (file downloaded, 72,842,120 bytes, every vertex read)"
+        },
+        "padded_0_15": [
+          14.95,
+          49.88,
+          16.74,
+          50.94
+        ],
+        "padded_note": "west, south, east, north plus or minus 0.15 deg, rounded outward to 0.01 deg, the same margin map_sets.state uses for US states"
+      },
+      "layers": "country_layers",
+      "osm_extract": {
+        "name": "kralovehradecky",
+        "pbf_url": "https://download.geofabrik.de/europe/czech-republic/kralovehradecky-latest.osm.pbf",
+        "pbf_bytes": 60357319,
+        "gpkg_url": "https://download.geofabrik.de/europe/czech-republic/kralovehradecky-latest-free.gpkg.zip",
+        "gpkg_bytes": 108367660,
+        "verified": "2026-11-18 (HTTP HEAD)"
+      },
+      "padded_box_touches": [
+        "Poland"
+      ],
+      "padded_box_touches_note": "tested against the Natural Earth 1:110m outlines shipped in web/world-context.json, not against a border dataset"
+    },
+    {
+      "code": "CZ-53",
+      "name": "Pardubický kraj",
+      "name_en": "Pardubice",
+      "country": "Czechia",
+      "country_iso": "CZ",
+      "admin_level": "region (kraj)",
+      "national_code": "94",
+      "okresy": 4,
+      "obce": 451,
+      "bbox": {
+        "west": 15.3628,
+        "south": 49.5721,
+        "east": 16.8674,
+        "north": 50.2076,
+        "source": {
+          "dataset": "INSPIRE Administrative Units (AU), Czech Republic, national level Kraj, ETRS89 (EPSG:4258)",
+          "publisher": "ČÚZK (Czech Office for Surveying, Mapping and Cadastre)",
+          "licence": "CC-BY-4.0",
+          "url": "https://services.cuzk.gov.cz/gml/inspire/au/epsg-4258/1.zip",
+          "verified": "2026-11-18 (file downloaded, 72,842,120 bytes, every vertex read)"
+        },
+        "padded_0_15": [
+          15.21,
+          49.42,
+          17.02,
+          50.36
+        ],
+        "padded_note": "west, south, east, north plus or minus 0.15 deg, rounded outward to 0.01 deg, the same margin map_sets.state uses for US states"
+      },
+      "layers": "country_layers",
+      "osm_extract": {
+        "name": "pardubicky",
+        "pbf_url": "https://download.geofabrik.de/europe/czech-republic/pardubicky-latest.osm.pbf",
+        "pbf_bytes": 55378128,
+        "gpkg_url": "https://download.geofabrik.de/europe/czech-republic/pardubicky-latest-free.gpkg.zip",
+        "gpkg_bytes": 99989927,
+        "verified": "2026-11-18 (HTTP HEAD)"
+      }
+    },
+    {
+      "code": "CZ-63",
+      "name": "Kraj Vysočina",
+      "name_en": "Vysočina",
+      "country": "Czechia",
+      "country_iso": "CZ",
+      "admin_level": "region (kraj)",
+      "national_code": "108",
+      "okresy": 5,
+      "obce": 704,
+      "bbox": {
+        "west": 14.8882,
+        "south": 48.9376,
+        "east": 16.4183,
+        "north": 49.8612,
+        "source": {
+          "dataset": "INSPIRE Administrative Units (AU), Czech Republic, national level Kraj, ETRS89 (EPSG:4258)",
+          "publisher": "ČÚZK (Czech Office for Surveying, Mapping and Cadastre)",
+          "licence": "CC-BY-4.0",
+          "url": "https://services.cuzk.gov.cz/gml/inspire/au/epsg-4258/1.zip",
+          "verified": "2026-11-18 (file downloaded, 72,842,120 bytes, every vertex read)"
+        },
+        "padded_0_15": [
+          14.73,
+          48.78,
+          16.57,
+          50.02
+        ],
+        "padded_note": "west, south, east, north plus or minus 0.15 deg, rounded outward to 0.01 deg, the same margin map_sets.state uses for US states"
+      },
+      "layers": "country_layers",
+      "osm_extract": {
+        "name": "vysocina",
+        "pbf_url": "https://download.geofabrik.de/europe/czech-republic/vysocina-latest.osm.pbf",
+        "pbf_bytes": 73638857,
+        "gpkg_url": "https://download.geofabrik.de/europe/czech-republic/vysocina-latest-free.gpkg.zip",
+        "gpkg_bytes": 149388827,
+        "verified": "2026-11-18 (HTTP HEAD)"
+      },
+      "padded_box_touches": [
+        "Austria"
+      ],
+      "padded_box_touches_note": "tested against the Natural Earth 1:110m outlines shipped in web/world-context.json, not against a border dataset"
+    },
+    {
+      "code": "CZ-64",
+      "name": "Jihomoravský kraj",
+      "name_en": "South Moravia",
+      "country": "Czechia",
+      "country_iso": "CZ",
+      "admin_level": "region (kraj)",
+      "national_code": "116",
+      "okresy": 7,
+      "obce": 673,
+      "bbox": {
+        "west": 15.5424,
+        "south": 48.6165,
+        "east": 17.6469,
+        "north": 49.6333,
+        "source": {
+          "dataset": "INSPIRE Administrative Units (AU), Czech Republic, national level Kraj, ETRS89 (EPSG:4258)",
+          "publisher": "ČÚZK (Czech Office for Surveying, Mapping and Cadastre)",
+          "licence": "CC-BY-4.0",
+          "url": "https://services.cuzk.gov.cz/gml/inspire/au/epsg-4258/1.zip",
+          "verified": "2026-11-18 (file downloaded, 72,842,120 bytes, every vertex read)"
+        },
+        "padded_0_15": [
+          15.39,
+          48.46,
+          17.8,
+          49.79
+        ],
+        "padded_note": "west, south, east, north plus or minus 0.15 deg, rounded outward to 0.01 deg, the same margin map_sets.state uses for US states"
+      },
+      "layers": "country_layers",
+      "osm_extract": {
+        "name": "jihomoravsky",
+        "pbf_url": "https://download.geofabrik.de/europe/czech-republic/jihomoravsky-latest.osm.pbf",
+        "pbf_bytes": 92081970,
+        "gpkg_url": "https://download.geofabrik.de/europe/czech-republic/jihomoravsky-latest-free.gpkg.zip",
+        "gpkg_bytes": 151972650,
+        "verified": "2026-11-18 (HTTP HEAD)"
+      },
+      "padded_box_touches": [
+        "Austria",
+        "Slovakia"
+      ],
+      "padded_box_touches_note": "tested against the Natural Earth 1:110m outlines shipped in web/world-context.json, not against a border dataset"
+    },
+    {
+      "code": "CZ-71",
+      "name": "Olomoucký kraj",
+      "name_en": "Olomouc",
+      "country": "Czechia",
+      "country_iso": "CZ",
+      "admin_level": "region (kraj)",
+      "national_code": "124",
+      "okresy": 5,
+      "obce": 402,
+      "bbox": {
+        "west": 16.712,
+        "south": 49.2688,
+        "east": 17.9181,
+        "north": 50.4494,
+        "source": {
+          "dataset": "INSPIRE Administrative Units (AU), Czech Republic, national level Kraj, ETRS89 (EPSG:4258)",
+          "publisher": "ČÚZK (Czech Office for Surveying, Mapping and Cadastre)",
+          "licence": "CC-BY-4.0",
+          "url": "https://services.cuzk.gov.cz/gml/inspire/au/epsg-4258/1.zip",
+          "verified": "2026-11-18 (file downloaded, 72,842,120 bytes, every vertex read)"
+        },
+        "padded_0_15": [
+          16.56,
+          49.11,
+          18.07,
+          50.6
+        ],
+        "padded_note": "west, south, east, north plus or minus 0.15 deg, rounded outward to 0.01 deg, the same margin map_sets.state uses for US states"
+      },
+      "layers": "country_layers",
+      "osm_extract": {
+        "name": "olomoucky",
+        "pbf_url": "https://download.geofabrik.de/europe/czech-republic/olomoucky-latest.osm.pbf",
+        "pbf_bytes": 58447086,
+        "gpkg_url": "https://download.geofabrik.de/europe/czech-republic/olomoucky-latest-free.gpkg.zip",
+        "gpkg_bytes": 104040464,
+        "verified": "2026-11-18 (HTTP HEAD)"
+      },
+      "padded_box_touches": [
+        "Poland"
+      ],
+      "padded_box_touches_note": "tested against the Natural Earth 1:110m outlines shipped in web/world-context.json, not against a border dataset"
+    },
+    {
+      "code": "CZ-72",
+      "name": "Zlínský kraj",
+      "name_en": "Zlín",
+      "country": "Czechia",
+      "country_iso": "CZ",
+      "admin_level": "region (kraj)",
+      "national_code": "141",
+      "okresy": 4,
+      "obce": 307,
+      "bbox": {
+        "west": 17.1097,
+        "south": 48.8541,
+        "east": 18.4156,
+        "north": 49.5398,
+        "source": {
+          "dataset": "INSPIRE Administrative Units (AU), Czech Republic, national level Kraj, ETRS89 (EPSG:4258)",
+          "publisher": "ČÚZK (Czech Office for Surveying, Mapping and Cadastre)",
+          "licence": "CC-BY-4.0",
+          "url": "https://services.cuzk.gov.cz/gml/inspire/au/epsg-4258/1.zip",
+          "verified": "2026-11-18 (file downloaded, 72,842,120 bytes, every vertex read)"
+        },
+        "padded_0_15": [
+          16.95,
+          48.7,
+          18.57,
+          49.69
+        ],
+        "padded_note": "west, south, east, north plus or minus 0.15 deg, rounded outward to 0.01 deg, the same margin map_sets.state uses for US states"
+      },
+      "layers": "country_layers",
+      "osm_extract": {
+        "name": "zlinsky",
+        "pbf_url": "https://download.geofabrik.de/europe/czech-republic/zlinsky-latest.osm.pbf",
+        "pbf_bytes": 53105434,
+        "gpkg_url": "https://download.geofabrik.de/europe/czech-republic/zlinsky-latest-free.gpkg.zip",
+        "gpkg_bytes": 99276355,
+        "verified": "2026-11-18 (HTTP HEAD)"
+      },
+      "padded_box_touches": [
+        "Slovakia"
+      ],
+      "padded_box_touches_note": "tested against the Natural Earth 1:110m outlines shipped in web/world-context.json, not against a border dataset"
+    },
+    {
+      "code": "CZ-80",
+      "name": "Moravskoslezský kraj",
+      "name_en": "Moravia-Silesia",
+      "country": "Czechia",
+      "country_iso": "CZ",
+      "admin_level": "region (kraj)",
+      "national_code": "132",
+      "okresy": 6,
+      "obce": 300,
+      "bbox": {
+        "west": 17.1465,
+        "south": 49.3926,
+        "east": 18.8593,
+        "north": 50.328,
+        "source": {
+          "dataset": "INSPIRE Administrative Units (AU), Czech Republic, national level Kraj, ETRS89 (EPSG:4258)",
+          "publisher": "ČÚZK (Czech Office for Surveying, Mapping and Cadastre)",
+          "licence": "CC-BY-4.0",
+          "url": "https://services.cuzk.gov.cz/gml/inspire/au/epsg-4258/1.zip",
+          "verified": "2026-11-18 (file downloaded, 72,842,120 bytes, every vertex read)"
+        },
+        "padded_0_15": [
+          16.99,
+          49.24,
+          19.01,
+          50.48
+        ],
+        "padded_note": "west, south, east, north plus or minus 0.15 deg, rounded outward to 0.01 deg, the same margin map_sets.state uses for US states"
+      },
+      "layers": "country_layers",
+      "osm_extract": {
+        "name": "moravskoslezky",
+        "pbf_url": "https://download.geofabrik.de/europe/czech-republic/moravskoslezky-latest.osm.pbf",
+        "pbf_bytes": 80639346,
+        "gpkg_url": "https://download.geofabrik.de/europe/czech-republic/moravskoslezky-latest-free.gpkg.zip",
+        "gpkg_bytes": 141385959,
+        "verified": "2026-11-18 (HTTP HEAD)"
+      },
+      "padded_box_touches": [
+        "Poland",
+        "Slovakia"
+      ],
+      "padded_box_touches_note": "tested against the Natural Earth 1:110m outlines shipped in web/world-context.json, not against a border dataset"
+    }
+  ]
+}
