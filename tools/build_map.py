@@ -12,7 +12,7 @@ rows in `meta` are taken from the input file, not hard-coded. Output tables:
   poi(id, cls, name, lon, lat)             help-relevant points (hospitals, pharmacies, water...)
   meta(key, value)
 """
-import math, os, sqlite3, struct, sys, time
+import math, os, re, sqlite3, struct, sys, time, zipfile
 from array import array
 from pathlib import Path
 
@@ -122,9 +122,27 @@ def area_z(minx, maxx, miny, maxy, base):
 
 
 def source_facts(path):
-    """The GeoPackage says which extract it is and when the data was last changed."""
-    name = Path(path).name
-    date = time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime(os.path.getmtime(path)))
+    """The archive and the OpenStreetMap data date this GeoPackage came from.
+
+    Geofabrik's README inside the zip states the data date; the GeoPackage's own
+    gpkg_contents.last_change is when the extract was built, which is close but not
+    the same fact. The file's mtime is the last fallback.
+    """
+    p = Path(path)
+    zip_path = p.with_name(p.stem + '-latest-free.gpkg.zip')
+    archive = zip_path.name if zip_path.exists() else p.name
+    date = time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime(os.path.getmtime(p)))
+    stated = None
+    try:
+        with zipfile.ZipFile(zip_path) as z:
+            readme = z.read('README').decode('utf-8', 'replace')
+        m = re.search(r'data as of (\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z)', readme)
+        if m:
+            stated = m.group(1)
+    except (OSError, KeyError, zipfile.BadZipFile):
+        pass
+    if stated:
+        return archive, stated
     try:
         db = sqlite3.connect(path)
         row = db.execute('SELECT MAX(last_change) FROM gpkg_contents').fetchone()
@@ -134,13 +152,19 @@ def source_facts(path):
             date = stamp[:19] + 'Z'
     except sqlite3.Error:
         pass
-    return name, date
+    return archive, date
+
+
+def outer_box(world, step=100):
+    """The bounds rounded outwards to two decimals, so no feature falls outside them."""
+    return (math.floor(world[0] * step) / step, math.floor(world[1] * step) / step,
+            math.ceil(world[2] * step) / step, math.ceil(world[3] * step) / step)
 
 
 def main():
     t0 = time.time()
     src = sqlite3.connect(SRC)
-    source_name, data_date = source_facts(SRC)
+    source_archive, data_date = source_facts(SRC)
     world = [None, None, None, None]  # min lon, min lat, max lon, max lat over everything added
     dst = sqlite3.connect(DST)
     dst.executescript('''PRAGMA journal_mode=OFF; PRAGMA synchronous=OFF;
@@ -226,9 +250,9 @@ def main():
             dst.execute('INSERT INTO poi VALUES (?,?,?,?,?)', (pid, cls, name, (minx + maxx) / 2, (miny + maxy) / 2))
     dst.execute('CREATE INDEX poi_cls ON poi(cls, lon, lat)')
     dst.executemany('INSERT INTO meta VALUES (?,?)', [
-        ('source', f'OpenStreetMap contributors, via Geofabrik {source_name} (ODbL 1.0)'),
+        ('source', f'OpenStreetMap contributors, via Geofabrik {source_archive} (ODbL 1.0)'),
         ('data_as_of', data_date),
-        ('bounds', '%.2f,%.2f,%.2f,%.2f' % tuple(world) if world[0] is not None else ''),
+        ('bounds', '%.2f,%.2f,%.2f,%.2f' % outer_box(world) if world[0] is not None else ''),
         ('built', time.strftime('%Y-%m-%dT%H:%M:%S')),
     ])
     dst.commit()
