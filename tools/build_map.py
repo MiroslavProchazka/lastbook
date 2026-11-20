@@ -1,18 +1,20 @@
 #!/usr/bin/env python3
-"""Convert the Geofabrik SoCal GeoPackage (OpenStreetMap, ODbL) into a compact, spatially indexed
+"""Convert a Geofabrik GeoPackage (OpenStreetMap, ODbL) into a compact, spatially indexed
 map database the app can draw offline.
 
   python3 tools/build_map.py derived/geo/socal.gpkg derived/geo/map.sqlite
 
-Input is a copy extracted from library-data/geography/openstreetmap/socal-latest-free.gpkg.zip;
-the original archive is only read. Output tables:
+Input is a copy extracted from any Geofabrik <region>-latest-free.gpkg.zip (a US state or a
+region outside it); the original archive is only read. The `source`, `data_as_of` and `bounds`
+rows in `meta` are taken from the input file, not hard-coded. Output tables:
   feat(id, layer, cls, name, minz, geom)   geom = packed int32 lon/lat * 1e6 (see pack())
   feat_idx (R*Tree on bbox)
   poi(id, cls, name, lon, lat)             help-relevant points (hospitals, pharmacies, water...)
   meta(key, value)
 """
-import math, sqlite3, struct, sys, time
+import math, os, sqlite3, struct, sys, time
 from array import array
+from pathlib import Path
 
 SRC, DST = sys.argv[1], sys.argv[2]
 Q = 1e6
@@ -119,9 +121,27 @@ def area_z(minx, maxx, miny, maxy, base):
     return max(base, min(16, z))
 
 
+def source_facts(path):
+    """The GeoPackage says which extract it is and when the data was last changed."""
+    name = Path(path).name
+    date = time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime(os.path.getmtime(path)))
+    try:
+        db = sqlite3.connect(path)
+        row = db.execute('SELECT MAX(last_change) FROM gpkg_contents').fetchone()
+        db.close()
+        if row and row[0]:
+            stamp = str(row[0]).strip().replace(' ', 'T').rstrip('Z')
+            date = stamp[:19] + 'Z'
+    except sqlite3.Error:
+        pass
+    return name, date
+
+
 def main():
     t0 = time.time()
     src = sqlite3.connect(SRC)
+    source_name, data_date = source_facts(SRC)
+    world = [None, None, None, None]  # min lon, min lat, max lon, max lat over everything added
     dst = sqlite3.connect(DST)
     dst.executescript('''PRAGMA journal_mode=OFF; PRAGMA synchronous=OFF;
       DROP TABLE IF EXISTS feat; DROP TABLE IF EXISTS feat_idx; DROP TABLE IF EXISTS poi; DROP TABLE IF EXISTS meta;
@@ -136,6 +156,11 @@ def main():
             return
         fid[0] += 1
         bx = bbox(parts)
+        if world[0] is None:
+            world[:] = [bx[0], bx[2], bx[1], bx[3]]
+        else:
+            world[0] = min(world[0], bx[0]); world[1] = min(world[1], bx[2])
+            world[2] = max(world[2], bx[1]); world[3] = max(world[3], bx[3])
         dst.execute('INSERT INTO feat VALUES (?,?,?,?,?,?)', (fid[0], layer, cls, name, minz, pack(parts)))
         dst.execute('INSERT INTO feat_idx VALUES (?,?,?,?,?,?,?)', (fid[0], *bx, minz, 30))
 
@@ -192,13 +217,18 @@ def main():
             if table == 'gis_osm_natural_free' and cls not in ('spring',):
                 continue
             minx, maxx, miny, maxy = bbox(parts)
+            if world[0] is None:
+                world[:] = [minx, miny, maxx, maxy]
+            else:
+                world[0] = min(world[0], minx); world[1] = min(world[1], miny)
+                world[2] = max(world[2], maxx); world[3] = max(world[3], maxy)
             pid += 1
             dst.execute('INSERT INTO poi VALUES (?,?,?,?,?)', (pid, cls, name, (minx + maxx) / 2, (miny + maxy) / 2))
     dst.execute('CREATE INDEX poi_cls ON poi(cls, lon, lat)')
     dst.executemany('INSERT INTO meta VALUES (?,?)', [
-        ('source', 'OpenStreetMap contributors, via Geofabrik socal-latest-free.gpkg.zip (ODbL 1.0)'),
-        ('data_as_of', '2026-10-25T21:21:21Z'),
-        ('bounds', '-121.36,32.50,-114.10,35.89'),
+        ('source', f'OpenStreetMap contributors, via Geofabrik {source_name} (ODbL 1.0)'),
+        ('data_as_of', data_date),
+        ('bounds', '%.2f,%.2f,%.2f,%.2f' % tuple(world) if world[0] is not None else ''),
         ('built', time.strftime('%Y-%m-%dT%H:%M:%S')),
     ])
     dst.commit()
